@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Learning Progress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row">
+            <!-- Progress Overview -->
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Learning Progress</h4>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: {{ (total_completed / total_games * 100) if total_games > 0 else 0 }}%">
+                            </div>
+                        </div>
+                        <p>Games Completed: {{ total_completed }}/{{ total_games }}</p>
+                        <p>Total Points: {{ total_points }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Achievements -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title">Recent Achievements</h4>
+                        <div class="row">
+                            {% for achievement in recent_achievements %}
+                            <div class="col-md-6 mb-3">
+                                <div class="achievement-card p-3 border rounded">
+                                    <i class="fas fa-trophy text-warning me-2"></i>
+                                    <h5 class="d-inline">{{ achievement.name }}</h5>
+                                    <p class="text-muted mb-0">{{ achievement.description }}</p>
+                                    <small class="text-muted">Earned {{ achievement.timestamp|datetime }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game History -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Game History</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Game Type</th>
+                                        <th>Date Played</th>
+                                        <th>Score</th>
+                                        <th>Time Spent</th>
+                                        <th>Completion</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for game in game_history %}
+                                    <tr>
+                                        <td>{{ game.type|title }}</td>
+                                        <td>{{ game.started_at|datetime }}</td>
+                                        <td>{{ game.total_points }}</td>
+                                        <td>{{ game.time_spent|duration }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar" 
+                                                    style="width: {{ game.completion_percentage }}%">
+                                                    {{ game.completion_percentage }}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="/play-game/{{ game.id }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-play"></i> Replay
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Learning Insights -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Learning Insights</h4>
+                        <canvas id="learningChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Knowledge Map</h4>
+                        <div id="knowledge-map" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script>
+        // Initialize learning progress chart
+        const ctx = document.getElementById('learningChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ chart_dates|tojson }},
+                datasets: [{
+                    label: 'Points Over Time',
+                    data: {{ chart_points|tojson }},
+                    borderColor: '#4ecdc4',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Initialize knowledge map
+        const width = document.getElementById('knowledge-map').offsetWidth;
+        const height = 300;
+
+        const svg = d3.select('#knowledge-map')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const simulation = d3.forceSimulation({{ knowledge_nodes|tojson }})
+            .force('link', d3.forceLink({{ knowledge_links|tojson }}).id(d => d.id))
+            .force('charge', d3.forceManyBody().strength(-100))
+            .force('center', d3.forceCenter(width / 2, height / 2));
+
+        const link = svg.append('g')
+            .selectAll('line')
+            .data({{ knowledge_links|tojson }})
+            .enter().append('line')
+            .style('stroke', '#999')
+            .style('stroke-opacity', 0.6);
+
+        const node = svg.append('g')
+            .selectAll('circle')
+            .data({{ knowledge_nodes|tojson }})
+            .enter().append('circle')
+            .attr('r', 5)
+            .style('fill', '#4ecdc4');
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+        });
+    </script>
+</body>
+</html>

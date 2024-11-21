@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Game Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <div class="sidebar">
+            <div class="paper-info">
+                <h2>Paper Details</h2>
+                <div id="paper-title"></div>
+                <div id="paper-authors"></div>
+                <div id="paper-progress"></div>
+            </div>
+            <div class="game-controls">
+                <button id="start-game" class="btn primary">Start Game</button>
+                <button id="pause-game" class="btn secondary">Pause</button>
+                <button id="reset-game" class="btn warning">Reset</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="game-canvas"></div>
+            <div id="interactive-elements">
+                <div id="quiz-container" class="game-element"></div>
+                <div id="simulation-container" class="game-element"></div>
+                <div id="puzzle-container" class="game-element"></div>
+            </div>
+        </div>
+        
+        <div class="learning-panel">
+            <h3>Learning Progress</h3>
+            <div id="progress-chart"></div>
+            <div id="achievements">
+                <h4>Achievements</h4>
+                <div id="badges-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/games.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameManager = new GameManager({
+                paperId: '{{ paper_id }}',
+                gameType: '{{ game_type }}',
+                difficulty: '{{ difficulty }}'
+            });
+            gameManager.initialize();
+        });
+    </script>
+</body>
+</html>

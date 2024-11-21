@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PaperScape - Turn Papers into Adventures! 🚀</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #FF6B6B;
+            --accent-color: #4ECDC4;
+            --background-color: #F7F7FF;
+            --text-color: #2C3E50;
+        }
+
+        body {
+            background: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            padding: 1rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.1);
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        }
+
+        #game-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .btn-custom {
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.2);
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.3);
+        }
+
+        .score-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .achievement-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        #game-interface {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="floating-particles" id="particles"></div>
+
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="/" class="navbar-item text-white text-decoration-none">
+                <i class="fas fa-paper-plane me-2"></i>
+                <strong>PaperScape</strong>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="game-container animate__animated animate__fadeIn">
+            <h1 id="game-title" class="text-center mb-4">
+                <i class="fas fa-gamepad me-2"></i>
+                <span class="animate__animated animate__pulse animate__infinite">Loading Your Adventure...</span>
+            </h1>
+            <div id="game-interface"></div>
+        </div>
+    </div>
+
+    <script>
+        const gameId = window.location.pathname.split('/').pop();
+        let gameState = {
+            points: 0,
+            discoveries: [],
+            currentStage: 0
+        };
+
+        async function loadGame() {
+            try {
+                const response = await fetch(`/api/game/${gameId}`);
+                const gameData = await response.json();
+
+                const gameInterface = document.getElementById('game-interface');
+                document.getElementById('game-title').textContent = gameData.title;
+
+                switch(gameData.type) {
+                    case 'simulation':
+                        renderSimulation(gameData, gameInterface);
+                        break;
+                    case 'story_adventure':
+                        renderStoryAdventure(gameData, gameInterface);
+                        break;
+                    case 'concept_map':
+                        renderConceptMap(gameData, gameInterface);
+                        break;
+                    case 'research_journey':
+                        renderResearchJourney(gameData, gameInterface);
+                        break;
+                    default:
+                        renderBasicGame(gameData, gameInterface);
+                }
+            } catch (error) {
+                console.error('Game loading error:', error);
+            }
+        }
+
+        function renderSimulation(gameData, container) {
+            container.innerHTML = `
+                <div class="canvas-container">
+                    <canvas id="simulation-canvas"></canvas>
+                    <div class="simulation-controls">
+                        ${gameData.steps[1].interaction.parameters.map(param => `
+                            <div class="form-group">
+                                <label>${param.name}</label>
+                                <input type="range" class="form-range" 
+                                    min="${param.min}" max="${param.max}" value="${param.default}"
+                                    onInput="updateSimulation(this.value, '${param.name}')">
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Initialize Matter.js simulation
+            const engine = Matter.Engine.create();
+            const render = Matter.Render.create({
+                canvas: document.getElementById('simulation-canvas'),
+                engine: engine,
+                options: {
+                    width: container.offsetWidth,
+                    height: 600,
+                    wireframes: false,
+                    background: '#1a1a2e'
+                }
+            });
+
+            // Add simulation elements
+            gameData.steps[0].interaction.elements.forEach((element, index) => {
+                const circle = Matter.Bodies.circle(
+                    Math.random() * render.options.width,
+                    Math.random() * render.options.height,
+                    20,
+                    {
+                        render: {
+                            fillStyle: `hsl(${index * 60}, 80%, 60%)`
+                        }
+                    }
+                );
+                Matter.World.add(engine.world, circle);
+            });
+
+            Matter.Engine.run(engine);
+            Matter.Render.run(render);
+        }
+
+        function renderStoryAdventure(gameData, container) {
+            const currentChapter = gameData.chapters[gameState.currentStage];
+            
+            container.innerHTML = `
+                <div class="story-scene animate__animated animate__fadeIn" 
+                    style="background-image: url('/static/backgrounds/${currentChapter.scene.background}.jpg')">
+                    <h2>${currentChapter.title}</h2>
+                    <p class="mt-4">${currentChapter.narrative}</p>
+                    
+                    <div class="choices-container mt-5">
+                        ${currentChapter.choices ? currentChapter.choices.map(choice => `
+                            <button class="btn btn-light mb-2 w-100 animate__animated animate__fadeInUp" 
+                                onClick="makeChoice(${choice.leads_to})">
+                                ${choice.text}
+                            </button>
+                        `).join('') : ''}
+                    </div>
+                </div>
+            `;
+
+            // Animate characters
+            currentChapter.scene.characters.forEach(char => {
+                const charElement = document.createElement('div');
+                charElement.className = `character animate__animated animate__fadeIn`;
+                charElement.style.backgroundImage = `url('/static/sprites/${char.sprite}.png')`;
+                charElement.style[char.position] = '20px';
+                container.querySelector('.story-scene').appendChild(charElement);
+            });
+        }
+
+        function renderConceptMap(gameData, container) {
+            container.innerHTML = '<svg id="concept-map" width="100%" height="600"></svg>';
+            
+            const svg = d3.select('#concept-map');
+            const width = container.offsetWidth;
+            const height = 600;
+            
+            // Create force simulation
+            const simulation = d3.forceSimulation(gameData.concept_map.nodes)
+                .force('link', d3.forceLink(gameData.concept_map.relationships).id(d => d.id))
+                .force('charge', d3.forceManyBody().strength(-100))
+                .force('center', d3.forceCenter(width / 2, height / 2));
+
+            // Draw relationships
+            const links = svg.append('g')
+                .selectAll('line')
+                .data(gameData.concept_map.relationships)
+                .enter().append('line')
+                .style('stroke', '#999')
+                .style('stroke-opacity', 0.6);
+
+            // Draw nodes
+            const nodes = svg.append('g')
+                .selectAll('circle')
+                .data(gameData.concept_map.nodes)
+                .enter().append('circle')
+                .attr('r', 20)
+                .style('fill', d => gameData.visualization.node_colors[d.type])
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            // Add labels
+            const labels = svg.append('g')
+                .selectAll('text')
+                .data(gameData.concept_map.nodes)
+                .enter().append('text')
+                .text(d => d.label)
+                .style('text-anchor', 'middle')
+                .style('fill', 'white')
+                .style('font-size', '12px');
+
+            // Update positions
+            simulation.on('tick', () => {
+                links
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                nodes
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y + 5);
+            });
+
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+        }
+
+        function renderResearchJourney(gameData, container) {
+            container.innerHTML = `
+                <div class="research-journey animate__animated animate__fadeIn">
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                            style="width: ${(gameState.currentStage / gameData.journey.stages.length) * 100}%">
+                        </div>
+                    </div>
+                    
+                    ${gameData.journey.stages.map((stage, index) => `
+                        <div class="research-journey-stage ${index === gameState.currentStage ? 'active' : ''}"
+                            style="opacity: ${index <= gameState.currentStage ? 1 : 0.5}">
+                            <h3>${stage.title}</h3>
+                            <p>${stage.description}</p>
+                            ${renderStageInteraction(stage.interaction)}
+                        </div>
+                    `).join('')}
+
+                    <div class="achievements-section mt-4">
+                        <h4>Achievements</h4>
+                        <div class="d-flex flex-wrap">
+                            ${gameData.journey.achievements.map(achievement => `
+                                <div class="achievement-badge">
+                                    <i class="fas fa-trophy"></i>
+                                    ${achievement.name}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStageInteraction(interaction) {
+            switch(interaction.type) {
+                case 'hypothesis_builder':
+                    return `
+                        <div class="hypothesis-builder">
+                            <select class="form-select mb-2">
+                                ${interaction.components.map(comp => `
+                                    <option value="${comp}">${comp}</option>
+                                `).join('')}
+                            </select>
+                            <button class="btn btn-primary" onClick="submitHypothesis()">
+                                Form Hypothesis
+                            </button>
+                        </div>
+                    `;
+                case 'lab_simulation':
+                    return `
+                        <div class="lab-simulation">
+                            <div class="equipment-selection mb-3">
+                                ${interaction.equipment.map(equip => `
+                                    <button class="btn btn-outline-primary m-1">
+                                        <i class="fas fa-${equip}"></i> ${equip}
+                                    </button>
+                                `).join('')}
+                            </div>
+                            <div class="variables-control">
+                                ${interaction.variables.map(variable => `
+                                    <div class="form-group">
+                                        <label>${variable.name}</label>
+                                        <input type="range" class="form-range" 
+                                            min="${variable.range[0]}" 
+                                            max="${variable.range[1]}"
+                                            value="${(variable.range[0] + variable.range[1]) / 2}">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                default:
+                    return '';
+            }
+        }
+
+        function makeChoice(nextChapter) {
+            gameState.currentStage = nextChapter - 1;
+            loadGame();
+        }
+
+        function updateSimulation(value, parameter) {
+            // Update simulation parameters
+            console.log(`Updating ${parameter} to ${value}`);
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.width = Math.random() * 10 + 5 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // Initialize particles
+        createParticles();
+
+        // Add hover effects to buttons
+        document.querySelectorAll('.btn-custom').forEach(button => {
+            button.addEventListener('mouseover', () => {
+                gsap.to(button, {
+                    scale: 1.05,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            });
+
+            button.addEventListener('mouseout', () => {
+                gsap.to(button, {
+                    scale: 1,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', loadGame);
+    </script>
+</body>
+</html>

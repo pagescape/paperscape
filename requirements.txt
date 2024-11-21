@@ -1,0 +1,27 @@
+# Core Backend
+Flask==2.3.3
+Werkzeug==2.3.7
+python-dotenv==1.0.0
+Flask-Cors==4.0.0
+
+# PDF Processing
+PyPDF2==3.0.1
+pdfminer.six==20221105
+
+# NLP and ML
+nltk==3.8.1
+
+# Data Processing
+numpy==2.1.3
+pandas==2.2.3
+tqdm==4.66.1
+
+# Frontend
+Jinja2==3.1.2
+Flask-SocketIO==5.3.5
+python-socketio==5.9.0
+
+# Visualization
+plotly==5.16.1
+matplotlib==3.9.2
+networkx==3.1

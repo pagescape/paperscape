@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Research Paper Game Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #f4f6f9; 
+            font-family: 'Arial', sans-serif;
+        }
+        .upload-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #file-upload {
+            display: none;
+        }
+        .upload-label {
+            cursor: pointer;
+            border: 2px dashed #3498db;
+            padding: 50px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .upload-label:hover {
+            background-color: #f1f8ff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">Research Game Platform</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/progress">
+                            <i class="fas fa-chart-line"></i> My Progress
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="upload-container text-center">
+            <h1 class="mb-4">Research Paper Game Platform</h1>
+            <form id="upload-form" enctype="multipart/form-data">
+                <label for="file-upload" class="upload-label">
+                    <input type="file" id="file-upload" name="file" accept=".pdf,.txt">
+                    <div id="upload-text">
+                        <h3>📄 Click to Upload Research Paper</h3>
+                        <p>Supported formats: PDF, TXT</p>
+                    </div>
+                </label>
+                <button type="submit" class="btn btn-primary mt-3" style="display:none;" id="submit-btn">
+                    Generate Learning Games
+                </button>
+            </form>
+            <div id="game-container" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const uploadForm = document.getElementById('upload-form');
+        const fileUpload = document.getElementById('file-upload');
+        const submitBtn = document.getElementById('submit-btn');
+        const gameContainer = document.getElementById('game-container');
+
+        fileUpload.addEventListener('change', (e) => {
+            submitBtn.style.display = e.target.files.length > 0 ? 'block' : 'none';
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                // Display generated games
+                gameContainer.innerHTML = data.games.map(game => `
+                    <div class="card mb-3">
+                        <div class="card-header">${game.title}</div>
+                        <div class="card-body">
+                            <h5 class="card-title">${game.type.replace('_', ' ').toUpperCase()} Game</h5>
+                            <a href="/play-game/${game.id}" class="btn btn-success">Play Game</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Failed to process paper. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

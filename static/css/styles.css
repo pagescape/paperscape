@@ -1,0 +1,305 @@
+/* Global Styles */
+:root {
+    --primary-color: #4CAF50;
+    --secondary-color: #2196F3;
+    --accent-color: #FF9800;
+    --background-color: #f5f5f5;
+    --text-color: #333;
+    --shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.game-container {
+    display: grid;
+    grid-template-columns: 250px 1fr 300px;
+    gap: 20px;
+    padding: 20px;
+    height: 100vh;
+}
+
+.sidebar {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+.paper-info {
+    margin-bottom: 20px;
+}
+
+.paper-info h2 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.game-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn.secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.btn.warning {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.main-content {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 600px;
+    background: #f8f9fa;
+}
+
+.game-element {
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+.learning-panel {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+.learning-panel h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+#progress-chart {
+    height: 200px;
+    margin-bottom: 20px;
+}
+
+#achievements {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+#achievements h4 {
+    color: var(--secondary-color);
+    margin-bottom: 10px;
+}
+
+.puzzle-piece {
+    background: var(--accent-color);
+    color: white;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: move;
+    user-select: none;
+}
+
+.drop-zone {
+    min-height: 100px;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+    padding: 10px;
+    transition: border-color 0.3s;
+}
+
+.drop-zone.active {
+    border-color: var(--primary-color);
+    background: rgba(76, 175, 80, 0.1);
+}
+
+@keyframes particle-float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
+
+.particle {
+    animation: particle-float 3s ease-in-out infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    .sidebar, .learning-panel {
+        max-width: 100%;
+    }
+}
+
+/* Loading Animation */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.loading::after {
+    content: '';
+    width: 30px;
+    height: 30px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-out;
+}
+
+.bounce {
+    animation: bounce 0.5s ease-in-out;
+}
+
+/* Game Elements */
+.game-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Interactive Elements */
+.interactive-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.interactive-button:hover {
+    background: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+/* Game-specific Styles */
+.simulation-container {
+    background: var(--dark-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.story-container {
+    position: relative;
+    min-height: 400px;
+    padding: 30px;
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+
+.concept-map-container {
+    width: 100%;
+    height: 600px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 15px;
+    }
+    
+    .story-container {
+        min-height: 300px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Loading Animation */
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--light-color);
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
